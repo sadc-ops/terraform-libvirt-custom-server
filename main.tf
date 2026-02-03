@@ -8,6 +8,7 @@ locals {
       addresses = null
       mac = libvirt_network.mac
       hostname = null
+      wait_for_lease = libvirt_network.ip != "" ? false : true
     }],
     [for macvtap_interface in var.macvtap_interfaces: {
       network_name = null
@@ -16,13 +17,14 @@ locals {
       addresses = null
       mac = macvtap_interface.mac
       hostname = null
+      wait_for_lease = macvtap_interface.ip != "" ? false : true
     }]
   )
   hostname = var.hostname.hostname != "" ? var.hostname.hostname : var.name
 }
 
 module "network_configs" {
-  source = "git::https://github.com/Ferlab-Ste-Justine/terraform-cloudinit-templates.git//network?ref=v0.15.0"
+  source = "git::https://github.com/sadc-ops/terraform-cloudinit-templates.git//network?ref=v0.15.0"
   network_interfaces = concat(
     [for idx, libvirt_network in var.libvirt_networks: {
       ip = libvirt_network.ip
@@ -56,6 +58,7 @@ locals {
             ssh_admin_public_key = var.ssh_admin_public_key
             ssh_admin_user = var.ssh_admin_user
             admin_user_password = var.admin_user_password
+            qemu_agent = var.qemu_agent
           }
         )
       }
@@ -114,9 +117,10 @@ resource "libvirt_domain" "vm" {
       addresses = network_interface.value["addresses"]
       mac = network_interface.value["mac"]
       hostname = network_interface.value["hostname"]
+      wait_for_lease = network_interface.value["wait_for_lease"]
     }
   }
-
+  qemu_agent = var.qemu_agent
   running = var.running
   autostart = var.autostart
 
@@ -134,6 +138,13 @@ resource "libvirt_domain" "vm" {
     target_type = "virtio"
     target_port = "1"
   }
+
+  graphics {
+    type        = var.domain_graphics_type
+    listen_type = "address"
+    autoport    = true
+  }
+
 
   dynamic "xml" {
     for_each = length(var.gpus) > 0 ? [var.gpus] : []

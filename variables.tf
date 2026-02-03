@@ -97,6 +97,12 @@ variable "hostname" {
   }
 }
 
+variable "qemu_agent" {
+  description = "Whether to install and enable the use of qemu_agent in the vm"
+  type        = bool
+  default     = true
+}
+
 variable "running" {
   description = "Whether the vm should be running or stopped"
   type        = bool
@@ -110,11 +116,24 @@ variable "autostart" {
 }
 
 variable "gpus" {
-  description = "List of gpus"
+  description = "List of host gpus to pass to the vm"
   type = list(object({
     domain   = string
     bus      = string
+    slot     = string
     function = string
   }))
   default = []
+}
+
+variable "gpus_pci" {
+  description = "List of gpus to pass to the vm by specifying their pci"
+  type = list(string)
+  default = []
+}
+
+variable "domain_graphics_type" {
+  description = "Domain graphics type to use. It can be either vnc or spice. Default is spice"
+  type = string
+  default = "spice"
 }

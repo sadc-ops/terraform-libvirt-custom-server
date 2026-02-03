@@ -23,6 +23,7 @@
                     <xsl:element name ="address">
                         <xsl:attribute name="domain">${gpu.domain}</xsl:attribute>
                         <xsl:attribute name="bus">${gpu.bus}</xsl:attribute>
+                        <xsl:attribute name="slot">${gpu.slot}</xsl:attribute>
                         <xsl:attribute name="function">${gpu.function}</xsl:attribute>
                     </xsl:element>
                 </xsl:element>

@@ -25,3 +25,9 @@ users:
   - name: ${ssh_admin_user}
     ssh_authorized_keys:
       - "${ssh_admin_public_key}"
+%{ if qemu_agent ~}
+packages:
+  - qemu-guest-agent
+runcmd:
+  - systemctl enable qemu-guest-agent &&  systemctl start qemu-guest-agent
+%{ endif ~}
