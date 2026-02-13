@@ -25,11 +25,18 @@ variable "libvirt_networks" {
   type = list(object({
     network_name = string
     network_id = string
-    prefix_length = string
-    ip = string
-    mac = string
-    gateway = string
-    dns_servers = list(string)
+    prefix_length   = optional(number)
+    ip              = optional(string)
+    mac             = optional(string)
+    gateway         = optional(string)
+    dns_servers = optional(list(string), [])
+    search_domains = optional(list(string), [])
+    dhcp_identifier = optional(string,"duid")
+    dhcp4_overrides = optional(object({
+      use_dns     = optional(bool)
+      use_mtu     = optional(bool)
+      use_domains = optional(string)
+    }))
   }))
   default = []
 }
@@ -38,11 +45,18 @@ variable "macvtap_interfaces" {
   description = "List of macvtap interfaces."
   type        = list(object({
     interface = string,
-    prefix_length = number,
-    ip = string,
-    mac = string,
-    gateway = string,
-    dns_servers = list(string),
+    prefix_length = optional(number),
+    ip  = optional(string),
+    mac = optional(string),
+    gateway = optional(string),
+    dns_servers = optional(list(string), [])
+    search_domains = optional(list(string), [])
+    dhcp_identifier = optional(string,"duid")
+    dhcp4_overrides = optional(object({
+      use_dns     = optional(bool)
+      use_mtu     = optional(bool)
+      use_domains = optional(string)
+    }))
   }))
   default = []
 }
@@ -135,6 +149,14 @@ variable "gpus_pci" {
 variable "domain_graphics_type" {
   description = "Domain graphics type to use. It can be either vnc or spice. Default is spice"
   type = string
-  default = "spice"
   default = "vnc"
+}
+variable "machine" {
+  description = "The machine type, you normally won't need to set this unless you are running on a platform that defaults to the wrong machine type for your template"
+  type = string
+  validation {
+    condition     = var.machine == "" || var.machine == "q35"
+    error_message = "machine can only be empty or have q35 as value."
+  }
+  default = ""
 }

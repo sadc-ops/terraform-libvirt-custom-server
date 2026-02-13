@@ -8,7 +8,7 @@ locals {
       addresses = null
       mac = libvirt_network.mac
       hostname = null
-      wait_for_lease = libvirt_network.ip != "" ? false : true
+      wait_for_lease = libvirt_network.ip != null ? false : true
     }],
     [for macvtap_interface in var.macvtap_interfaces: {
       network_name = null
@@ -17,7 +17,7 @@ locals {
       addresses = null
       mac = macvtap_interface.mac
       hostname = null
-      wait_for_lease = macvtap_interface.ip != "" ? false : true
+      wait_for_lease = macvtap_interface.ip != null ? false : true
     }]
   )
   hostname = var.hostname.hostname != "" ? var.hostname.hostname : var.name
@@ -25,6 +25,8 @@ locals {
 
 module "network_configs" {
   source = "git::https://github.com/sadc-ops/terraform-cloudinit-templates.git//network?ref=v0.15.0"
+  source = "git::https://github.com/sadc-ops/terraform-cloudinit-templates.git//network?ref=v0.50.1_miircic"
+  machine= var.machine
   network_interfaces = concat(
     [for idx, libvirt_network in var.libvirt_networks: {
       ip = libvirt_network.ip
@@ -33,6 +35,9 @@ module "network_configs" {
       interface = "libvirt${idx}"
       mac = libvirt_network.mac
       dns_servers = libvirt_network.dns_servers
+      search_domains = libvirt_network.search_domains
+      dhcp_identifier = libvirt_network.dhcp_identifier
+      dhcp4_overrides = libvirt_network.dhcp4_overrides
     }],
     [for idx, macvtap_interface in var.macvtap_interfaces: {
       ip = macvtap_interface.ip
@@ -41,6 +46,9 @@ module "network_configs" {
       interface = "macvtap${idx}"
       mac = macvtap_interface.mac
       dns_servers = macvtap_interface.dns_servers
+      search_domains = macvtap_interface.search_domains
+      dhcp_identifier = macvtap_interface.dhcp_identifier
+      dhcp4_overrides = macvtap_interface.dhcp4_overrides
     }]
   )
 }
@@ -93,6 +101,7 @@ resource "libvirt_cloudinit_disk" "vm" {
 
 resource "libvirt_domain" "vm" {
   name = var.name
+  machine = var.machine != "" ? var.machine : null
 
   cpu {
     mode = "host-passthrough"
