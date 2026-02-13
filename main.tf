@@ -21,10 +21,17 @@ locals {
     }]
   )
   hostname = var.hostname.hostname != "" ? var.hostname.hostname : var.name
+  network_perf_tuning_effective = [
+    for p in var.network_perf_tuning : {
+      network_type = p.network_type
+      network_name = p.network_name
+      vhost_queues = coalesce(p.vhost_queues, min(var.vcpus, 8))
+    }
+  ]
+  should_enable_xml = (length(local.gpu_devices) + length(local.network_perf_tuning_effective)) > 0
 }
 
 module "network_configs" {
-  source = "git::https://github.com/sadc-ops/terraform-cloudinit-templates.git//network?ref=v0.15.0"
   source = "git::https://github.com/sadc-ops/terraform-cloudinit-templates.git//network?ref=v0.50.1_miircic"
   machine= var.machine
   network_interfaces = concat(
@@ -156,12 +163,14 @@ resource "libvirt_domain" "vm" {
 
 
   dynamic "xml" {
-    for_each = length(var.gpus) > 0 ? [var.gpus] : []
+    for_each = local.should_enable_xml ? [1] : []
     content {
       xslt = templatefile(
         "${path.module}/files/devices.xslt.tpl",
         {
-          gpus = xml.value
+          gpus = local.gpu_devices,
+          nic_tuning =  local.network_perf_tuning_effective
+          machine = var.machine
         }
       )
     }

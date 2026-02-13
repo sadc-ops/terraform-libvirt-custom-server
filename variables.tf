@@ -151,6 +151,30 @@ variable "domain_graphics_type" {
   type = string
   default = "vnc"
 }
+
+variable "network_perf_tuning" {
+  description = "Parameters injected into the libvirt domain XSLT that tunes the network interface. Only interface type=network is supported."
+  type = list(object({
+    network_type = optional(string,"network")
+    network_name  = string
+    vhost_queues = optional(number)
+  }))
+  default = []
+  # Only allow interface type=network (since your XSLT matches only that)
+  validation {
+    condition     = alltrue([for p in var.network_perf_tuning : lower(trimspace(p.network_type)) == "network"])
+    error_message = "network_perf_tuning[*].network_type must be exactly \"network\"."
+  }
+  # vhost_queues: allow null/omitted, otherwise must be <= vCPU AND <= 8
+  validation {
+    condition = alltrue([
+      for p in var.network_perf_tuning :
+      p.vhost_queues == null || ( p.vhost_queues >= 1 && p.vhost_queues <= min(var.vcpus, 8))
+    ])
+    error_message = "network_perf_tuning[*].vhost_queues must be null/omitted, or between 1 and min(vcpu_count, 8)."
+  }
+}
+
 variable "machine" {
   description = "The machine type, you normally won't need to set this unless you are running on a platform that defaults to the wrong machine type for your template"
   type = string

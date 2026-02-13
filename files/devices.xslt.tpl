@@ -63,4 +63,27 @@
     </xsl:copy>
   </xsl:template>
 
+%{ for t in nic_tuning ~}
+  <xsl:template match="domain/devices/interface[@type='network' and source/@network='${t.network_name}']">
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:apply-templates select="node()"/>
+
+      <xsl:if test="not(driver)">
+        <driver name="vhost" queues="${t.vhost_queues}"/>
+      </xsl:if>
+
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="domain/devices/interface[@type='network' and source/@network='${t.network_name}']/driver">
+    <xsl:copy>
+      <xsl:copy-of select="@*[local-name() != 'name' and local-name() != 'queues']"/>
+      <xsl:attribute name="name">vhost</xsl:attribute>
+      <xsl:attribute name="queues">${t.vhost_queues}</xsl:attribute>
+      <xsl:apply-templates select="node()"/>
+    </xsl:copy>
+  </xsl:template>
+%{ endfor ~}
+
 </xsl:stylesheet>

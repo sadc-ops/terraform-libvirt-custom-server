@@ -62,8 +62,11 @@ From there, it takes plain cloud-init parts as an argument for customizability t
 - **running**: Whether the vm should be running or stopped. Defaults to **true**.
 - **autostart**: Whether the vm should start on host boot up. Defaults to **true**.
 - **qemu_agent**: Whether to install and enable the use of qemu_agent in the vm. Defaults to **true**.
-- **domain_graphics_type**: The domain graphics type to use. Defaults to **spice**.
 - **domain_graphics_type**: The domain graphics type to use. It can be either **vnc** or **spice**. Defaults to **vnc**.
+- **network_perf_tuning**: Parameters injected into the libvirt domain XSLT that tunes the network interface. Only interface type=network is supported. It is an array of objects, each having the following keys:
+  - **network_type**: Type of network interface. Must be **network**. Defaults to **network**.
+  - **network_name**: Name of the libvirt network to apply tuning to.
+  - **vhost_queues**: Number of vhost queues. Must be between 1 and min(vcpu_count, 8), or omitted.
 - **machine**: The machine type. You normally won't need to set this unless you are running on a platform that defaults to the wrong machine type for your template. Can only be empty or **q35**. Defaults to empty.
 
 ## Example of a custom cloud-init part
