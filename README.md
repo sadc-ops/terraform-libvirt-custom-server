@@ -34,6 +34,7 @@ From there, it takes plain cloud-init parts as an argument for customizability t
     - **use_dns**: Whether to use DNS settings from DHCP.
     - **use_mtu**: Whether to use MTU settings from DHCP.
     - **use_domains**: Whether to use domain settings from DHCP.
+  - **wait_for_lease**: When creating the domain resource, wait until the network interface gets a DHCP lease from libvirt, so that the computed IP addresses will be available when the domain is up and the plan applied. Defaults to **false**.
 - **macvtap_interfaces**: List of macvtap interfaces to connect the vm to. Each entry in the list is a map with the following keys:
   - **interface**: Host network interface that you plan to connect your macvtap interface with.
   - **prefix_length**: Length of the network prefix for the network the interface will be connected to. For a **192.168.1.0/24** for example, this would be **24**.
@@ -47,6 +48,7 @@ From there, it takes plain cloud-init parts as an argument for customizability t
     - **use_dns**: Whether to use DNS settings from DHCP.
     - **use_mtu**: Whether to use MTU settings from DHCP.
     - **use_domains**: Whether to use domain settings from DHCP.
+  - **wait_for_lease**: When creating the domain resource, wait until the network interface gets a DHCP lease from libvirt, so that the computed IP addresses will be available when the domain is up and the plan applied. Defaults to **false**.
 - **gpus**: List of host gpu devices to attach to the vm.
   - **domain**: Domain of the gpu device.
   - **bus**: Bus of the gpu device.
@@ -68,6 +70,8 @@ From there, it takes plain cloud-init parts as an argument for customizability t
   - **network_name**: Name of the libvirt network to apply tuning to.
   - **vhost_queues**: Number of vhost queues. Must be between 1 and min(vcpu_count, 8), or omitted.
 - **machine**: The machine type. You normally won't need to set this unless you are running on a platform that defaults to the wrong machine type for your template. Can only be empty or **q35**. Defaults to empty.
+- **timeouts**: Terraform domain operation timeouts. It is an object with the following fields:
+  - **create**: Timeout defining how long terraform should wait for domain creation operation to complete before failing. default is 5 mn
 
 ## Example of a custom cloud-init part
 

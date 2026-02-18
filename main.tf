@@ -1,5 +1,6 @@
 locals {
   cloud_init_volume_name = var.cloud_init_volume_name == "" ? "${var.name}-cloud-init.iso" : var.cloud_init_volume_name
+  hostname = var.hostname.hostname != "" ? var.hostname.hostname : var.name
   network_interfaces = concat(
     [for libvirt_network in var.libvirt_networks: {
       network_name = libvirt_network.network_name != "" ? libvirt_network.network_name : null
@@ -7,8 +8,8 @@ locals {
       macvtap = null
       addresses = null
       mac = libvirt_network.mac
-      hostname = null
-      wait_for_lease = libvirt_network.ip != null ? false : true
+      hostname = local.hostname
+      wait_for_lease = libvirt_network.wait_for_lease
     }],
     [for macvtap_interface in var.macvtap_interfaces: {
       network_name = null
@@ -17,10 +18,9 @@ locals {
       addresses = null
       mac = macvtap_interface.mac
       hostname = null
-      wait_for_lease = macvtap_interface.ip != null ? false : true
+      wait_for_lease = macvtap_interface.wait_for_lease
     }]
   )
-  hostname = var.hostname.hostname != "" ? var.hostname.hostname : var.name
   network_perf_tuning_effective = [
     for p in var.network_perf_tuning : {
       network_type = p.network_type
@@ -107,6 +107,9 @@ resource "libvirt_cloudinit_disk" "vm" {
 }
 
 resource "libvirt_domain" "vm" {
+  timeouts {
+    create = var.timeouts.create
+  }
   name = var.name
   machine = var.machine != "" ? var.machine : null
 

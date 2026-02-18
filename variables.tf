@@ -37,6 +37,7 @@ variable "libvirt_networks" {
       use_mtu     = optional(bool)
       use_domains = optional(string)
     }))
+    wait_for_lease = optional(bool,false)
   }))
   default = []
 }
@@ -57,6 +58,7 @@ variable "macvtap_interfaces" {
       use_mtu     = optional(bool)
       use_domains = optional(string)
     }))
+    wait_for_lease = optional(bool,false)
   }))
   default = []
 }
@@ -183,4 +185,14 @@ variable "machine" {
     error_message = "machine can only be empty or have q35 as value."
   }
   default = ""
+}
+
+variable "timeouts" {
+  description = "Terraform resource timeouts defining how long terraform should wait for domain create operation to complete before failing."
+  type = object({
+    create = string
+  })
+  default = {
+    create = "5m"
+  }
 }
