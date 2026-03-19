@@ -149,7 +149,7 @@ variable "gpus_pci" {
 }
 
 variable "domain_graphics_type" {
-  description = "Domain graphics type to use. It can be either vnc or spice. Default is spice"
+  description = "Domain graphics type to use. It can be either vnc or spice. Default is vnc"
   type = string
   default = "vnc"
 }
