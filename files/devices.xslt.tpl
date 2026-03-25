@@ -60,6 +60,16 @@
       </xsl:if>
 %{ endfor ~}
 
+%{ for fs in shared_filesystems ~}
+      <xsl:if test="not(filesystem/target[@dir='${fs.target_dir}'])">
+        <filesystem type="mount" accessmode="passthrough">
+          <driver type="virtiofs" queue="${fs.queue}"/>
+          <source dir="${fs.source_dir}"/>
+          <target dir="${fs.target_dir}"/>
+        </filesystem>
+      </xsl:if>
+%{ endfor ~}
+
     </xsl:copy>
   </xsl:template>
 
@@ -85,5 +95,19 @@
     </xsl:copy>
   </xsl:template>
 %{ endfor ~}
+
+%{ if length(shared_filesystems) > 0 ~}
+  <xsl:template match="/domain">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+      <xsl:if test="not(memoryBacking)">
+        <memoryBacking>
+          <source type="memfd"/>
+          <access mode="shared"/>
+        </memoryBacking>
+      </xsl:if>
+    </xsl:copy>
+  </xsl:template>
+%{ endif ~}
 
 </xsl:stylesheet>

@@ -72,6 +72,10 @@ From there, it takes plain cloud-init parts as an argument for customizability t
 - **machine**: The machine type. You normally won't need to set this unless you are running on a platform that defaults to the wrong machine type for your template. Can only be empty or **q35**. Defaults to empty.
 - **timeouts**: Terraform domain operation timeouts. It is an object with the following fields:
   - **create**: Timeout defining how long terraform should wait for domain creation operation to complete before failing. default is 5 mn
+- **shared_filesystems**: List of host directories to share with the guest via virtiofs. Requires virtiofsd >= 1.11 on the host. Defaults to **[]**. Each entry has the following fields:
+  - **source_dir**: Absolute path on the host to share.
+  - **target_dir**: Mount tag used inside the guest to mount the share (e.g. `mount -t virtiofs <target_dir> /mnt/myshare`).
+  - **queue**: virtiofs queue depth. Defaults to **1024**.
 
 ## Example of a custom cloud-init part
 

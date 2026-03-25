@@ -196,3 +196,13 @@ variable "timeouts" {
     create = "5m"
   }
 }
+
+variable "shared_filesystems" {
+  description = "List of host directories to share with the guest via virtiofs. Enabling this automatically injects the required memfd-backed shared memory configuration."
+  type = list(object({
+    source_dir = string
+    target_dir = string
+    queue      = optional(number, 1024)
+  }))
+  default = []
+}

@@ -28,7 +28,7 @@ locals {
       vhost_queues = coalesce(p.vhost_queues, min(var.vcpus, 8))
     }
   ]
-  should_enable_xml = (length(local.gpu_devices) + length(local.network_perf_tuning_effective)) > 0
+  should_enable_xml = (length(local.gpu_devices) + length(local.network_perf_tuning_effective) + length(var.shared_filesystems)) > 0 || var.machine == "q35"
 }
 
 module "network_configs" {
@@ -171,9 +171,10 @@ resource "libvirt_domain" "vm" {
       xslt = templatefile(
         "${path.module}/files/devices.xslt.tpl",
         {
-          gpus = local.gpu_devices,
-          nic_tuning =  local.network_perf_tuning_effective
-          machine = var.machine
+          gpus               = local.gpu_devices
+          nic_tuning         = local.network_perf_tuning_effective
+          machine            = var.machine
+          shared_filesystems = var.shared_filesystems
         }
       )
     }
