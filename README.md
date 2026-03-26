@@ -76,6 +76,9 @@ From there, it takes plain cloud-init parts as an argument for customizability t
   - **source_dir**: Absolute path on the host to share.
   - **target_dir**: Mount tag used inside the guest to mount the share (e.g. `mount -t virtiofs <target_dir> /mnt/myshare`).
   - **queue**: virtiofs queue depth. Defaults to **1024**.
+- **interface_naming**: Optional interface naming template strategy used to construct the network config. Defaults to **null** (no explicit naming). When set, it is an object with the following fields:
+  - **template**: Naming template string for network interfaces. Must contain the keyword **index**, which will be replaced with the interface's index (e.g. `eth{index}` or `ens{index}`).
+  - **start_index**: The starting index value used when expanding the template (e.g. `0` to start at `eth0`).
 
 ## Example of a custom cloud-init part
 
