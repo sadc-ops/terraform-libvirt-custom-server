@@ -220,7 +220,7 @@ variable "interface_naming" {
   default = null
 
   validation {
-    condition     = var.interface_naming == null ? true : strcontains(var.interface_naming.template, "index")
-    error_message = "The template must contain the 'index' keyword. Use variable default as example."
+    condition     = var.interface_naming == null ? true : strcontains(var.interface_naming.template, "$${index}")
+    error_message = "The template must contain the exact '$$${index}' keyword. Use variable default as example."
   }
 }
