@@ -10,9 +10,16 @@
     </xsl:copy>
   </xsl:template>
 
-%{ if machine != null && machine == "q35" ~}
+%{ if machine == "q35" ~}
   <!-- =========================================================================================================
+       FIX: only relevant to provider versions prior to 0.9.x
        FIX 1: Rewrite cdrom target bus from "ide" to "sata". Applies to ALL cdrom disks (cloud-init or otherwise)
+       FIX 2: Rewrite cdrom target dev from hd* to sd*.The provider typically sets "hdd"; remap to "sda".
+              We match any "hd" prefixed dev on a cdrom to be safe.
+       FIX 3: Strip <address> from cdrom disks IDE address elements (type="drive", controller/bus/unit for IDE)
+              are invalid on SATA and will cause libvirt to error. Removing them lets libvirt auto-assign a valid SATA address.
+       FIX 4: Strip <alias> from cdrom disks. Stale alias names (e.g. "ide0-1-1") become invalid after
+              the bus change. Libvirt will regenerate correct aliases.
        ========================================================================================================= -->
   <xsl:template match="/domain/devices/disk[@device='cdrom']/target/@bus[.='ide']">
     <xsl:attribute name="bus">
@@ -20,26 +27,14 @@
     </xsl:attribute>
   </xsl:template>
 
-  <!-- =============================================================================================================
-       FIX 2: Rewrite cdrom target dev from hd* to sd*.The provider typically sets "hdd"; remap to "sda".
-       We match any "hd" prefixed dev on a cdrom to be safe.
-       ========================================================================================================= -->
   <xsl:template match="/domain/devices/disk[@device='cdrom']/target/@dev[starts-with(.,'hd')]">
     <xsl:attribute name="dev">
       <xsl:value-of select="concat('sd', substring(., 3))"/>
     </xsl:attribute>
   </xsl:template>
 
-  <!-- =============================================================================================================
-       FIX 3: Strip <address> from cdrom disks IDE address elements (type="drive", controller/bus/unit for IDE)
-       are invalid on SATA and will cause libvirt to error. Removing them lets libvirt auto-assign a valid SATA address.
-       ========================================================================================================== -->
   <xsl:template match="/domain/devices/disk[@device='cdrom']/address"/>
 
-  <!-- ==============================================================================================================
-       FIX 4: Strip <alias> from cdrom disks. Stale alias names (e.g. "ide0-1-1") become invalid after
-       the bus change. Libvirt will regenerate correct aliases.
-       ========================================================================================================== -->
   <xsl:template match="/domain/devices/disk[@device='cdrom']/alias"/>
 %{ endif ~}
 
@@ -74,7 +69,7 @@
   </xsl:template>
 
 %{ for t in nic_tuning ~}
-  <xsl:template match="domain/devices/interface[@type='network' and source/@network='${t.network_name}']">
+  <xsl:template match="/domain/devices/interface[@type='network' and source/@network='${t.network_name}']">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:apply-templates select="node()"/>
@@ -86,7 +81,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="domain/devices/interface[@type='network' and source/@network='${t.network_name}']/driver">
+  <xsl:template match="/domain/devices/interface[@type='network' and source/@network='${t.network_name}']/driver">
     <xsl:copy>
       <xsl:copy-of select="@*[local-name() != 'name' and local-name() != 'queues']"/>
       <xsl:attribute name="name">vhost</xsl:attribute>

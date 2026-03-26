@@ -1,6 +1,6 @@
 variable "name" {
   description = "Name to give to the vm"
-  type = string
+  type        = string
 }
 
 variable "vcpus" {
@@ -23,42 +23,42 @@ variable "volume_ids" {
 variable "libvirt_networks" {
   description = "Parameters of libvirt network connections if a libvirt networks are used."
   type = list(object({
-    network_name = string
-    network_id = string
+    network_name    = string
+    network_id      = string
     prefix_length   = optional(number)
     ip              = optional(string)
     mac             = optional(string)
     gateway         = optional(string)
-    dns_servers = optional(list(string), [])
-    search_domains = optional(list(string), [])
-    dhcp_identifier = optional(string,"duid")
+    dns_servers     = optional(list(string), [])
+    search_domains  = optional(list(string), [])
+    dhcp_identifier = optional(string, "duid")
     dhcp4_overrides = optional(object({
       use_dns     = optional(bool)
       use_mtu     = optional(bool)
       use_domains = optional(string)
     }))
-    wait_for_lease = optional(bool,false)
+    wait_for_lease = optional(bool, false)
   }))
   default = []
 }
 
 variable "macvtap_interfaces" {
   description = "List of macvtap interfaces."
-  type        = list(object({
-    interface = string,
-    prefix_length = optional(number),
-    ip  = optional(string),
-    mac = optional(string),
-    gateway = optional(string),
-    dns_servers = optional(list(string), [])
-    search_domains = optional(list(string), [])
-    dhcp_identifier = optional(string,"duid")
+  type = list(object({
+    interface       = string,
+    prefix_length   = optional(number),
+    ip              = optional(string),
+    mac             = optional(string),
+    gateway         = optional(string),
+    dns_servers     = optional(list(string), [])
+    search_domains  = optional(list(string), [])
+    dhcp_identifier = optional(string, "duid")
     dhcp4_overrides = optional(object({
       use_dns     = optional(bool)
       use_mtu     = optional(bool)
       use_domains = optional(string)
     }))
-    wait_for_lease = optional(bool,false)
+    wait_for_lease = optional(bool, false)
   }))
   default = []
 }
@@ -71,16 +71,16 @@ variable "cloud_init_volume_pool" {
 variable "cloud_init_volume_name" {
   description = "Name of the cloud init volume"
   type        = string
-  default = ""
+  default     = ""
 }
 
-variable "ssh_admin_user" { 
+variable "ssh_admin_user" {
   description = "Pre-existing ssh admin user of the image"
   type        = string
   default     = "ubuntu"
 }
 
-variable "admin_user_password" { 
+variable "admin_user_password" {
   description = "Optional password for admin user"
   type        = string
   sensitive   = true
@@ -94,7 +94,7 @@ variable "ssh_admin_public_key" {
 
 variable "cloud_init_configurations" {
   description = "List of cloud-init configurations to add to the vm"
-  type        = list(object({
+  type = list(object({
     filename = string
     content  = string
   }))
@@ -103,7 +103,7 @@ variable "cloud_init_configurations" {
 
 variable "hostname" {
   description = "Value to assign to the hostname. If left to empty (default), 'name' variable will be used."
-  type        = object({
+  type = object({
     hostname = string
     is_fqdn  = string
   })
@@ -144,21 +144,21 @@ variable "gpus" {
 
 variable "gpus_pci" {
   description = "List of gpus to pass to the vm by specifying their pci"
-  type = list(string)
-  default = []
+  type        = list(string)
+  default     = []
 }
 
 variable "domain_graphics_type" {
   description = "Domain graphics type to use. It can be either vnc or spice. Default is vnc"
-  type = string
-  default = "vnc"
+  type        = string
+  default     = "vnc"
 }
 
 variable "network_perf_tuning" {
   description = "Parameters injected into the libvirt domain XSLT that tunes the network interface. Only interface type=network is supported."
   type = list(object({
-    network_type = optional(string,"network")
-    network_name  = string
+    network_type = optional(string, "network")
+    network_name = string
     vhost_queues = optional(number)
   }))
   default = []
@@ -171,7 +171,7 @@ variable "network_perf_tuning" {
   validation {
     condition = alltrue([
       for p in var.network_perf_tuning :
-      p.vhost_queues == null || ( p.vhost_queues >= 1 && p.vhost_queues <= min(var.vcpus, 8))
+      p.vhost_queues == null || (p.vhost_queues >= 1 && p.vhost_queues <= min(var.vcpus, 8))
     ])
     error_message = "network_perf_tuning[*].vhost_queues must be null/omitted, or between 1 and min(vcpu_count, 8)."
   }
@@ -179,12 +179,12 @@ variable "network_perf_tuning" {
 
 variable "machine" {
   description = "The machine type, you normally won't need to set this unless you are running on a platform that defaults to the wrong machine type for your template"
-  type = string
+  type        = string
   validation {
     condition     = var.machine == "" || var.machine == "q35"
     error_message = "machine can only be empty or have q35 as value."
   }
-  default = ""
+  default = "q35"
 }
 
 variable "timeouts" {
@@ -205,4 +205,22 @@ variable "shared_filesystems" {
     queue      = optional(number, 1024)
   }))
   default = []
+}
+
+variable "interface_naming" {
+  description = <<-EOT
+    This variable defines an interface naming template strategy to use to construct the network config
+  EOT
+
+  type = object({
+    template    = string
+    start_index = number
+  })
+
+  default = null
+
+  validation {
+    condition     = var.interface_naming == null ? true : strcontains(var.interface_naming.template, "index")
+    error_message = "The template must contain the 'index' keyword. Use variable default as example."
+  }
 }
