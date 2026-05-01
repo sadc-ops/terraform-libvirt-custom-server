@@ -49,7 +49,7 @@ locals {
 }
 
 module "network_configs" {
-  source           = "git::https://github.com/sadc-ops/terraform-cloudinit-templates.git//network?ref=v0.50.4_miircic"
+  source           = "git::https://github.com/sadc-ops/terraform-cloudinit-templates.git//network?ref=v0.50.5_miircic"
   interface_naming = local.iface_naming
   network_interfaces = concat(
     [
@@ -200,7 +200,7 @@ resource "libvirt_domain" "vm" {
       )
     }
   }
-  # Since virtios filesystem is not supported in v.8.x of this provider, custom xml has to passed via xslt.
+  # Since virtiofs filesystem is not supported in v.8.x of this provider, custom xml has to passed via xslt.
   # Therefore we need to ignore the provider native filesystem block in order to avoid conflicts
   lifecycle {
     ignore_changes = [filesystem]
